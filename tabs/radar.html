@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#050507">
+<title>Маяк</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050507; --card:#0d0d12; --card2:#14141b; --line:#23232d; --line2:#1a1a22;
+  --text:#F5F5F7; --muted:#8A8F99; --muted2:#5a5f6a; --accent:#FF9F0A;
+  --duh:#64D2FF; --telo:#30D158; --razum:#BF5AF2; --komm:#FF9F0A; --delo:#FFD54A; --energy:#FF453A;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:#000;color:var(--text);font-family:'DM Sans',sans-serif;display:flex;justify-content:center;overflow:hidden}
+.num{font-family:'JetBrains Mono',monospace}
+.phone{position:relative;width:100%;max-width:none;height:100%;min-height:100dvh;background:var(--bg);overflow:hidden;display:flex;flex-direction:column}
+.screen{position:absolute;inset:0;display:none;flex-direction:column}
+.screen.on{display:flex}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:18px}
+.sb{height:env(safe-area-inset-top,12px);min-height:12px}
+.muted{color:var(--muted)} .tiny{font-size:12px}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 20px 6px}
+.beacon{display:inline-flex;align-items:center;gap:8px;font-weight:800;letter-spacing:.14em;font-size:14px}
+.beacon .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);animation:pulse 2.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.topbar .q{font-family:'JetBrains Mono';font-size:13px;color:var(--muted)}
+
+/* день */
+.day{margin:8px 18px 4px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:15px 18px}
+.day .r1{display:flex;justify-content:space-between;align-items:baseline}
+.day .lab{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.day .pts{font-family:'JetBrains Mono';font-weight:800;font-size:26px}
+.day .pts small{color:var(--muted);font-size:16px;font-weight:700}
+.day .sub{font-family:'JetBrains Mono';font-size:12px;color:var(--muted)}
+.day .track{height:10px;border-radius:6px;background:#1b1b22;margin-top:11px;overflow:hidden}
+.day .fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#FFC247,var(--accent));transition:width .55s cubic-bezier(.22,1,.36,1)}
+
+/* переключатель фигуры */
+.seg{display:flex;gap:6px;justify-content:center;margin:12px 0 0}
+.seg button{padding:7px 16px;border-radius:11px;border:1px solid var(--line);background:var(--card);color:var(--muted);font-weight:700;font-size:13px;font-family:'DM Sans';cursor:pointer}
+.seg button.on{background:var(--accent);color:#1a1206;border-color:transparent}
+
+svg{width:100%;display:block;overflow:visible;touch-action:manipulation}
+.figwrap{padding:2px 10px 0}
+.idxline{text-align:center;margin-top:-4px}
+.idxline .n{font-family:'JetBrains Mono';font-weight:800;font-size:15px;color:var(--accent)}
+.idxline .l{font-size:11px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
+
+/* панель сектора */
+.secpanel{margin:6px 18px 0;background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;
+  max-height:0;opacity:0;transition:max-height .4s cubic-bezier(.22,1,.36,1),opacity .3s,margin .3s;border-width:0}
+.secpanel.open{max-height:640px;opacity:1;border-width:1px;margin-top:12px}
+.secpanel .hd{display:flex;align-items:center;gap:11px;padding:15px 18px 8px}
+.secpanel .hd .cd{width:15px;height:15px;border-radius:4px}
+.secpanel .hd .nm{font-family:'DM Sans';font-weight:700;font-size:18px;flex:1}
+.secpanel .hd .cnt{font-family:'JetBrains Mono';font-weight:700;font-size:14px;color:var(--muted)}
+.secpanel .closed-badge{display:none;align-items:center;gap:7px;margin:0 18px 8px;padding:9px 13px;border-radius:12px;font-weight:700;font-size:14px}
+.secpanel.alldone .closed-badge{display:flex}
+.tlist{padding:2px 12px 6px}
+.titem{display:flex;align-items:center;gap:13px;padding:13px 12px;border-radius:14px;cursor:pointer;transition:background .15s}
+.titem:active{background:var(--card2)}
+.titem .box{width:28px;height:28px;border-radius:9px;border:2px solid var(--muted2);flex:none;display:flex;align-items:center;justify-content:center;font-size:16px;color:#08120a;transition:.18s}
+.titem.done .box{background:currentColor;border-color:transparent}
+.titem .nm{flex:1;font-size:15.5px;font-weight:500}
+.titem.done .nm{color:var(--muted);text-decoration:line-through}
+.titem .q{font-family:'JetBrains Mono';font-size:12px;color:var(--muted2)}
+.secpanel .foot{display:flex;justify-content:space-between;padding:6px 18px 16px}
+.lnk{background:none;border:none;color:var(--accent);font-family:'DM Sans';font-weight:600;font-size:14px;cursor:pointer;padding:6px 0}
+.lnk.dim{color:var(--muted)}
+.hint{color:var(--muted);font-size:12.5px;text-align:center;padding:14px 30px 4px;line-height:1.5}
+
+/* общие кнопки/инпуты */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:54px;border:none;border-radius:16px;font-family:'DM Sans';font-weight:700;font-size:16px;cursor:pointer;transition:transform .12s}
+.btn:active{transform:scale(.97)}
+.btn-gold{background:linear-gradient(135deg,#FFC247,var(--accent));color:#1a1206}
+.btn-ghost{background:var(--card2);color:var(--text);border:1px solid var(--line)}
+.pad{padding:0 18px}
+.backbtn{background:none;border:none;color:var(--accent);font-weight:700;font-size:15px;cursor:pointer;padding:4px 0}
+
+/* manage */
+.mrow{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 15px;margin:9px 18px;cursor:pointer}
+.mrow .nm{flex:1;font-weight:500;font-size:15px}
+.mrow .meta{font-family:'JetBrains Mono';font-size:12px;color:var(--muted);text-align:right;line-height:1.4}
+.field{margin:10px 18px}.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:8px}
+.input{width:100%;height:52px;background:var(--card);border:1px solid var(--line);border-radius:13px;color:var(--text);padding:0 15px;font-size:16px;font-family:'DM Sans'}
+.input:focus{outline:none;border-color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:9px 13px;border-radius:11px;background:var(--card);border:1px solid var(--line);font-size:14px;cursor:pointer;font-family:'JetBrains Mono'}
+.chip.sel{background:var(--accent);color:#1a1206;border-color:transparent;font-weight:700}
+.wd{display:flex;gap:6px}.wd .d{flex:1;height:42px;border-radius:11px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;font-family:'JetBrains Mono';cursor:pointer}
+.wd .d.sel{background:var(--accent);color:#1a1206;border-color:transparent;font-weight:700}
+
+/* итоги */
+.tabs{display:flex;gap:6px;margin:12px 18px 4px}
+.tabs button{flex:1;height:40px;border-radius:11px;border:1px solid var(--line);background:var(--card);color:var(--muted);font-weight:700;font-size:13px;font-family:'DM Sans';cursor:pointer}
+.tabs button.on{background:var(--card2);color:var(--text);border-color:var(--accent)}
+.rv{display:grid;grid-template-columns:22px 1fr 130px 46px;align-items:center;gap:11px;padding:11px 18px}
+.rv+.rv{border-top:1px solid var(--line2)}
+.rv .ic{text-align:center;font-size:15px}.rv .nm{font-family:'JetBrains Mono';font-size:14px;color:#d6d6dd}
+.rv .bar{height:8px;border-radius:5px;background:#1a1a21;overflow:hidden}.rv .bar i{display:block;height:100%;border-radius:5px;transition:width .5s}
+.rv .pc{font-family:'JetBrains Mono';font-weight:700;font-size:14px;text-align:right}
+.coach{margin:14px 18px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px}
+.coach h4{font-size:15px;margin-bottom:6px}.coach p{font-size:14px;color:var(--muted);line-height:1.5}
+
+/* nav */
+.nav{position:absolute;left:0;right:0;bottom:0;display:flex;border-top:1px solid var(--line);background:rgba(13,13,18,.95);backdrop-filter:blur(8px);padding:8px 0 env(safe-area-inset-bottom,10px)}
+.nav button{flex:1;background:none;border:none;color:var(--muted2);font-family:'DM Sans';font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0}
+.nav button.on{color:var(--accent)} .nav .ic{font-size:19px}
+.toast{position:absolute;left:50%;transform:translateX(-50%);bottom:80px;background:var(--card2);border:1px solid var(--line);padding:10px 16px;border-radius:13px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:60;max-width:330px;text-align:center}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- ГЛАВНЫЙ -->
+  <section class="screen on" id="home">
+    <div class="sb"></div>
+    <div class="topbar"><span class="beacon"><span class="dot"></span>МАЯК</span><span class="q" id="qLabel">Q2 · 2026</span></div>
+    <div class="scroll">
+      <div class="day">
+        <div class="r1"><span class="lab">Прогресс дня</span><span class="sub" id="dayCount">0 из 0 задач</span></div>
+        <div class="r1" style="margin-top:4px"><span class="pts"><span id="dayPts">0</span><small> / 100</small></span><span class="sub" id="dayName"></span></div>
+        <div class="track"><div class="fill" id="dayFill" style="width:0%"></div></div>
+      </div>
+      <div class="seg"><button id="segStar" class="on" onclick="setFig('star')">Звезда</button><button id="segRadar" onclick="setFig('radar')">Радар</button></div>
+      <div class="figwrap"><svg id="fig" viewBox="-46 -34 452 446"></svg></div>
+      <div class="idxline"><span class="n" id="idxN">0</span> <span class="l">· Индекс Маяка · нажми на сектор</span></div>
+
+      <div class="secpanel" id="secpanel">
+        <div class="hd"><span class="cd" id="spDot"></span><span class="nm" id="spName"></span><span class="cnt" id="spCnt"></span></div>
+        <div class="closed-badge" id="spBadge">✓ Сектор закрыт на сегодня</div>
+        <div class="tlist" id="spTasks"></div>
+        <div class="foot" style="justify-content:flex-end"><button class="lnk" id="spEdit">Изменить задачи ›</button></div>
+      </div>
+      <p class="hint" id="homeHint">Нажми на сектор фигуры — он раскроется. Отметь галочками, что сделал сегодня, и закрой его.</p>
+    </div>
+  </section>
+
+  <!-- УПРАВЛЕНИЕ ЗАДАЧАМИ -->
+  <section class="screen" id="manage">
+    <div class="sb"></div>
+    <div class="topbar"><button class="backbtn" onclick="show('home')">‹ Маяк</button><span class="q" id="mgTitle"></span><span style="width:46px"></span></div>
+    <div class="scroll" id="mgList"></div>
+    <div class="pad" style="padding-bottom:env(safe-area-inset-bottom,18px)"><button class="btn btn-gold" id="mgAdd">+ Добавить задачу</button></div>
+  </section>
+
+  <!-- ФОРМА -->
+  <section class="screen" id="form">
+    <div class="sb"></div>
+    <div class="topbar"><button class="backbtn" id="fmBack">‹ Отмена</button><span class="q" id="fmTitle">Новая задача</span><span style="width:46px"></span></div>
+    <div class="scroll">
+      <div class="field"><label>Направление</label><div class="chips" id="fmDirs"></div></div>
+      <div class="field"><label>Название задачи</label><input class="input" id="fmName" placeholder="напр. Тренировка в зале"></div>
+      <div class="field"><label>Расписание</label>
+        <div class="chips" style="margin-bottom:8px"><span class="chip" onclick="schedPreset('daily')">Каждый день</span><span class="chip" onclick="schedPreset('work')">Будни</span><span class="chip" onclick="schedPreset('135')">Пн·Ср·Пт</span><span class="chip" onclick="schedPreset('clear')">Свои дни</span></div>
+        <div class="wd" id="fmDays"></div>
+      </div>
+      <div class="field"><label>Квартальная норма (раз за квартал) <span id="fmHintNorm" class="muted tiny"></span></label>
+        <input class="input" id="fmNorm" type="number" inputmode="numeric" placeholder="напр. 36">
+        <div class="chips" style="margin-top:8px"><span class="chip" onclick="setNorm(12)">12</span><span class="chip" onclick="setNorm(36)">36</span><span class="chip" onclick="setNorm(52)">52</span><span class="chip" onclick="setNorm(90)">90</span></div>
+      </div>
+      <div class="field" style="margin-top:18px"><button class="btn btn-gold" id="fmSave">Сохранить</button></div>
+      <div class="field" id="fmDeleteWrap" style="display:none"><button class="btn btn-ghost" id="fmDelete" style="color:var(--energy)">Удалить задачу</button></div>
+    </div>
+  </section>
+
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== ДАННЫЕ ===== */
+const C={x:180,y:180}, R=150, r=R/Math.sqrt(3), Rmax=150;
+function P(a,rad){const t=a*Math.PI/180;return{x:C.x+rad*Math.sin(t),y:C.y-rad*Math.cos(t)};}
+function fmtP(p){return p.map(q=>q.x.toFixed(1)+','+q.y.toFixed(1)).join(' ');}
+const WD=['вс','пн','вт','ср','чт','пт','сб']; // getDay 0..6
+const TODAY=(new Date()).getDay();
+const DIRS=[
+ {id:'duh',  name:'Дух',          ic:'✦', a:0,   col:'#64D2FF', tri:'Ф'},
+ {id:'komm', name:'Коммуникации', ic:'●', a:60,  col:'#FF9F0A', tri:'Р'},
+ {id:'telo', name:'Тело',         ic:'♥', a:120, col:'#30D158', tri:'Ф'},
+ {id:'delo', name:'Дело',         ic:'◆', a:180, col:'#FFD54A', tri:'Р'},
+ {id:'razum',name:'Разум',        ic:'■', a:240, col:'#BF5AF2', tri:'Ф'},
+ {id:'energy',name:'Энергия',     ic:'◈', a:300, col:'#FF453A', tri:'Р'},
+];
+const dirById=id=>DIRS.find(d=>d.id===id);
+let tid=0;
+let tasks=[
+ ['duh','Намаз 5 раз','daily',150,120,true],
+ ['duh','Чтение Корана','daily',90,64,false],
+ ['telo','Тренировка',[1,3,5],39,22,false],
+ ['telo','Сон 7+ часов','daily',90,70,true],
+ ['telo','10 000 шагов','daily',90,55,false],
+ ['razum','Чтение книг','daily',90,75,true],
+ ['razum','Обучение/курс',[2,4],26,18,false],
+ ['komm','Время с детьми','daily',80,34,false],
+ ['komm','Звонок родителям',[0],13,7,false],
+ ['komm','Встреча с друзьями',[6],12,4,false],
+ ['energy','Прогулка','daily',60,48,true],
+ ['energy','Медитация','daily',90,60,false],
+ ['delo','Глубокая работа',[1,2,3,4,5],100,80,false],
+ ['delo','Контент-выход',[1,3,5],39,35,false],
+].map(t=>({id:++tid,dir:t[0],name:t[1],sched:t[2],normQ:t[3],checksQ:t[4],doneToday:t[5]}));
+
+let fig='star', selDir=null, editId=null, curScreen='home';
+let fmSched=[]; // дни недели формы
+
+/* ===== РАСЧЁТЫ ===== */
+const isToday=t=> t.sched==='daily' || (Array.isArray(t.sched)&&t.sched.includes(TODAY));
+const todayTasks=()=>tasks.filter(isToday);
+const dirTasks=id=>tasks.filter(t=>t.dir===id);
+const dirTodayTasks=id=>dirTasks(id).filter(isToday);
+function dayPoints(){const tt=todayTasks();if(!tt.length)return{done:0,total:0,pts:0};
+  const done=tt.filter(t=>t.doneToday).length;return{done,total:tt.length,pts:Math.round(done/tt.length*100)};}
+function dirQ(id){const ts=dirTasks(id);if(!ts.length)return 0;
+  let s=0;ts.forEach(t=>s+=t.normQ>0?Math.min(t.checksQ/t.normQ,1.2):0);return s/ts.length;}
+function mayakIndex(){return Math.round(DIRS.reduce((a,d)=>a+Math.min(dirQ(d.id),1),0)/DIRS.length*100);}
+const pc=v=>Math.round(v*100);
+
+const BANDS=[[0,'Железо','#9aa0aa'],[15,'Бронза','#C97B43'],[30,'Серебро','#C7CCD6'],
+  [45,'Золото','#E0A23C'],[60,'Платина','#7FE0D0'],[75,'Алмаз','#7CC4FF'],[90,'Обсидиан','#B58Cff']];
+const bandFor=i=>{let b=BANDS[0];for(const x of BANDS)if(i>=x[0])b=x;return b;};
+
+/* ===== ФИГУРА ===== */
+function ringPts(k){let p=[];for(let a=0;a<360;a+=30){const rad=(a%60===0)?(r+k*(R-r)):r;p.push(P(a,rad));}return fmtP(p);}
+function hexValleys(){let p=[];for(let a=30;a<360;a+=60)p.push(P(a,r));return fmtP(p);}
+function kitePts(d,k){k=Math.max(0,Math.min(k,1));const vL=P(d.a-30,r),vR=P(d.a+30,r),tip=P(d.a,r+k*(R-r));return fmtP([C,vL,tip,vR]);}
+function hexRing(s){return fmtP(DIRS.map(d=>P(d.a,Rmax*s)));}
+
+function drawStar(){
+  const sel=selDir;
+  let g='';
+  for(let i=1;i<=10;i++){const op=i===10?.5:(i%5===0?.28:.12);g+=`<polygon points="${ringPts(i/10)}" fill="none" stroke="#3a3a46" stroke-opacity="${op}" stroke-width="${i===10?1.3:1}"/>`;}
+  g+=`<polygon points="${hexValleys()}" fill="none" stroke="#4a4a57" stroke-width="1.1" stroke-opacity=".6"/>`;
+  let sp='';for(let a=30;a<360;a+=60){const p=P(a,r);sp+=`<line x1="${C.x}" y1="${C.y}" x2="${p.x.toFixed(1)}" y2="${p.y.toFixed(1)}" stroke="#2c2c36" stroke-width="1"/>`;}
+  let kites=DIRS.map(d=>{const k=Math.min(dirQ(d.id),1);const dim=sel&&sel!==d.id;
+    return `<polygon class="hit" data-id="${d.id}" points="${kitePts(d,k)}" fill="${d.col}" fill-opacity="${dim?.18:.6}" stroke="${d.col}" stroke-opacity="${dim?.3:1}" stroke-width="2.2" stroke-linejoin="round" style="cursor:pointer;transition:fill-opacity .25s,stroke-opacity .25s"/>`;}).join('');
+  let labels=DIRS.map(d=>{const o=P(d.a,R+22);const an=Math.abs(Math.sin(d.a*Math.PI/180))<.3?'middle':(Math.sin(d.a*Math.PI/180)>0?'start':'end');
+    const dim=sel&&sel!==d.id;
+    return `<text class="hit" data-id="${d.id}" x="${o.x.toFixed(1)}" y="${(o.y+(d.a===0?-2:d.a===180?12:4)).toFixed(1)}" text-anchor="${an}" fill="${d.col}" fill-opacity="${dim?.4:1}" font-family="JetBrains Mono" font-weight="700" font-size="12" style="cursor:pointer">${d.name}</text>`;}).join('');
+  document.getElementById('fig').innerHTML=g+sp+kites+`<circle cx="${C.x}" cy="${C.y}" r="8" fill="#050507" stroke="#4a4a57" stroke-width="1.3"/><circle cx="${C.x}" cy="${C.y}" r="2.6" fill="#8A8F99"/>`+labels;
+  bindHits();
+}
+function drawRadar(){
+  const sel=selDir;
+  let g='';for(let i=1;i<=5;i++){const op=i===5?.5:.2;g+=`<polygon points="${hexRing(i/5)}" fill="none" stroke="#3a3a46" stroke-opacity="${op}" stroke-width="${i===5?1.3:1}"/>`;}
+  let sp=DIRS.map(d=>{const p=P(d.a,Rmax);const hl=sel===d.id;return `<line x1="${C.x}" y1="${C.y}" x2="${p.x.toFixed(1)}" y2="${p.y.toFixed(1)}" stroke="${hl?d.col:'#26262f'}" stroke-opacity="${hl?.8:1}" stroke-width="${hl?2:1}"/>`;}).join('');
+  // подсветка выбранного сектора (клин)
+  let wedge='';if(sel){const d=dirById(sel);wedge=`<polygon points="${fmtP([C,P(d.a-30,Rmax),P(d.a,Rmax),P(d.a+30,Rmax)])}" fill="${d.col}" fill-opacity=".10"/>`;}
+  const pts=DIRS.map(d=>P(d.a,Rmax*Math.max(.001,Math.min(dirQ(d.id),1))));
+  const poly=`<polygon points="${fmtP(pts)}" fill="#FF9F0A" fill-opacity=".13" stroke="#FF9F0A" stroke-width="2.4" stroke-linejoin="round"/>`;
+  let dots=DIRS.map((d,i)=>{const hl=sel===d.id;return `<circle class="hit" data-id="${d.id}" cx="${pts[i].x.toFixed(1)}" cy="${pts[i].y.toFixed(1)}" r="${hl?8:6}" fill="${d.col}" stroke="#050507" stroke-width="2" style="cursor:pointer"/>`;}).join('');
+  let labels=DIRS.map(d=>{const o=P(d.a,Rmax+22);const an=Math.abs(Math.sin(d.a*Math.PI/180))<.3?'middle':(Math.sin(d.a*Math.PI/180)>0?'start':'end');
+    const dim=sel&&sel!==d.id;return `<text class="hit" data-id="${d.id}" x="${o.x.toFixed(1)}" y="${(o.y+(d.a===0?-2:d.a===180?12:4)).toFixed(1)}" text-anchor="${an}" fill="${d.col}" fill-opacity="${dim?.4:1}" font-family="JetBrains Mono" font-weight="700" font-size="12" style="cursor:pointer">${d.name}</text>`;}).join('');
+  document.getElementById('fig').innerHTML=g+wedge+sp+poly+dots+`<circle cx="${C.x}" cy="${C.y}" r="2.6" fill="#5a5f6a"/>`+labels;
+  bindHits();
+}
+function drawFig(){fig==='star'?drawStar():drawRadar();}
+function bindHits(){document.querySelectorAll('#fig .hit').forEach(el=>el.addEventListener('click',()=>tapSector(el.dataset.id)));}
+function tapSector(id){const open=document.getElementById('secpanel').classList.contains('open');if(open&&selDir===id)closeSec();else openSec(id);}
+
+/* ===== ГЛАВНЫЙ ===== */
+function renderHome(){
+  drawFig();
+  document.getElementById('idxN').textContent=mayakIndex();
+  const dp=dayPoints();
+  document.getElementById('dayPts').textContent=dp.pts;
+  document.getElementById('dayFill').style.width=dp.pts+'%';
+  document.getElementById('dayCount').textContent=dp.done+' из '+dp.total+' задач';
+  document.getElementById('dayName').textContent='сегодня, '+WD[TODAY];
+}
+function openSec(id){
+  selDir=id; drawFig();
+  const d=dirById(id);
+  document.getElementById('spDot').style.background=d.col;
+  document.getElementById('spName').textContent=d.name;
+  const tt=dirTodayTasks(id), done=tt.filter(t=>t.doneToday).length;
+  document.getElementById('spCnt').textContent=tt.length?(done+'/'+tt.length+' сегодня'):'нет задач сегодня';
+  const badge=document.getElementById('spBadge');badge.style.background='color-mix(in srgb,'+d.col+' 18%,transparent)';badge.style.color=d.col;
+  const list=document.getElementById('spTasks');
+  if(!tt.length){
+    list.innerHTML='<p class="muted" style="padding:18px 14px;font-size:14px;line-height:1.5">На сегодня ('+WD[TODAY]+') задач в этом направлении нет.<br>Добавь или измени расписание в «Изменить задачи».</p>';
+  }else{
+    list.innerHTML=tt.map(t=>`<div class="titem ${t.doneToday?'done':''}" style="color:${d.col}" onclick="toggle(${t.id})">
+      <span class="box">${t.doneToday?'✓':''}</span><span class="nm">${t.name}</span><span class="q">${t.checksQ}/${t.normQ} кв</span></div>`).join('');
+  }
+  const sp=document.getElementById('secpanel');
+  sp.classList.toggle('alldone', tt.length>0 && done===tt.length);
+  sp.classList.add('open');
+  document.getElementById('homeHint').style.display='none';
+  document.getElementById('spEdit').onclick=()=>openManage(id);
+  setTimeout(()=>sp.scrollIntoView({behavior:'smooth',block:'nearest'}),120);
+}
+function closeSec(){selDir=null;drawFig();document.getElementById('secpanel').classList.remove('open');document.getElementById('homeHint').style.display='block';}
+function toggle(id){
+  const t=tasks.find(x=>x.id===id);if(!t)return;
+  if(t.doneToday){t.doneToday=false;t.checksQ=Math.max(0,t.checksQ-1);}
+  else{t.doneToday=true;t.checksQ=Math.min(t.checksQ+1,Math.round(t.normQ*1.2));}
+  renderHome();openSec(selDir);
+  const tt=dirTodayTasks(selDir),done=tt.filter(x=>x.doneToday).length;
+  if(tt.length&&done===tt.length){toast('Сектор «'+dirById(selDir).name+'» закрыт ✓');}
+}
+
+/* ===== УПРАВЛЕНИЕ ===== */
+function openManage(id){
+  selDir=selDir||id; const d=dirById(id);
+  document.getElementById('mgTitle').textContent=d.name+' · задачи';
+  const ts=dirTasks(id);
+  document.getElementById('mgList').innerHTML=ts.map(t=>{
+    const sch=t.sched==='daily'?'каждый день':t.sched.map(x=>WD[x]).join('·');
+    return `<div class="mrow" onclick="openForm(${t.id})"><span class="nm">${t.name}</span>
+      <span class="meta">${t.checksQ}/${t.normQ} кв<br>${sch}</span><span style="color:var(--muted)">›</span></div>`;}).join('')
+    || '<p class="muted" style="padding:24px 18px;text-align:center">Пока нет задач. Добавь первую.</p>';
+  document.getElementById('mgAdd').onclick=()=>openForm(null,id);
+  show('manage');
+}
+function openForm(id,dirPre){
+  editId=id;
+  document.getElementById('fmTitle').textContent=id?'Изменить задачу':'Новая задача';
+  document.getElementById('fmDeleteWrap').style.display=id?'block':'none';
+  let t=id?tasks.find(x=>x.id===id):null;
+  const curDir=t?t.dir:(dirPre||selDir||'telo');
+  document.getElementById('fmDirs').innerHTML=DIRS.map(d=>`<span class="chip ${d.id===curDir?'sel':''}" data-id="${d.id}" onclick="pickDir('${d.id}')">${d.name}</span>`).join('');
+  document.getElementById('fmName').value=t?t.name:'';
+  document.getElementById('fmNorm').value=t?t.normQ:'';
+  fmSched = t? (t.sched==='daily'?[0,1,2,3,4,5,6]:t.sched.slice()) : [1,3,5];
+  renderDays();
+  document.getElementById('fmBack').onclick=()=>show(id?'manage':'manage');
+  document.getElementById('fmSave').onclick=saveTask;
+  document.getElementById('fmDelete').onclick=()=>{tasks=tasks.filter(x=>x.id!==id);toast('Задача удалена');openManage(t.dir);};
+  show('form');
+}
+let fmDir='telo';
+function pickDir(id){fmDir=id;document.querySelectorAll('#fmDirs .chip').forEach(c=>c.classList.toggle('sel',c.dataset.id===id));}
+function renderDays(){document.getElementById('fmDays').innerHTML=[1,2,3,4,5,6,0].map(i=>`<div class="d ${fmSched.includes(i)?'sel':''}" onclick="toggleDay(${i})">${WD[i]}</div>`).join('');updateNormHint();}
+function toggleDay(i){const k=fmSched.indexOf(i);if(k>=0)fmSched.splice(k,1);else fmSched.push(i);renderDays();}
+function schedPreset(p){if(p==='daily')fmSched=[0,1,2,3,4,5,6];else if(p==='work')fmSched=[1,2,3,4,5];else if(p==='135')fmSched=[1,3,5];else fmSched=[];renderDays();}
+function updateNormHint(){const perWeek=fmSched.length;const est=perWeek*13;document.getElementById('fmHintNorm').textContent=perWeek?('· '+perWeek+'×/нед ≈ '+est+'/квартал'):'';}
+function setNorm(v){document.getElementById('fmNorm').value=v;}
+function saveTask(){
+  const name=document.getElementById('fmName').value.trim();
+  const norm=parseInt(document.getElementById('fmNorm').value)||0;
+  const dir=document.querySelector('#fmDirs .chip.sel')?.dataset.id||fmDir;
+  if(!name){toast('Впиши название');return;}
+  if(!fmSched.length){toast('Выбери дни расписания');return;}
+  if(norm<=0){toast('Укажи квартальную норму');return;}
+  const sched=fmSched.length===7?'daily':fmSched.slice().sort();
+  if(editId){const t=tasks.find(x=>x.id===editId);Object.assign(t,{name,normQ:norm,sched,dir});}
+  else tasks.push({id:++tid,dir,name,sched,normQ:norm,checksQ:0,doneToday:false});
+  toast('Сохранено ✓');openManage(dir);
+}
+
+/* ===== НАВИГАЦИЯ (внутри вкладки: home/manage/form) ===== */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');curScreen=id;
+  if(id==='home')renderHome();
+}
+function setFig(f){fig=f;document.getElementById('segStar').classList.toggle('on',f==='star');document.getElementById('segRadar').classList.toggle('on',f==='radar');drawFig();}
+let _t;function toast(m){const n=document.getElementById('toast');n.textContent=m;n.classList.add('show');clearTimeout(_t);_t=setTimeout(()=>n.classList.remove('show'),2000);}
+
+show('home');
+/* сигнал shell-у, что модуль загрузился (для error-boundary/изоляции) */
+try{parent.postMessage({type:'tab-ready',tab:'radar'},'*');}catch(e){}
+</script>
+</body>
+</html>

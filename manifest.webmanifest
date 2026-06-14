@@ -1,0 +1,11 @@
+{
+  "name": "Маяк — Трекер привычек",
+  "short_name": "Маяк",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#050507",
+  "theme_color": "#050507",
+  "lang": "ru"
+}

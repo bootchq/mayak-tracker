@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Кабинет</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050507;--card:#0d0d12;--line:#23232d;--text:#F5F5F7;--muted:#8A8F99;--accent:#FF9F0A}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100dvh;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 8px) 18px 24px}
+.hd{display:flex;align-items:center;gap:14px;margin:6px 0 22px}
+.ava{width:62px;height:62px;border-radius:50%;background:linear-gradient(135deg,#FFC247,var(--accent));display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono';font-weight:800;font-size:26px;color:#1a1206}
+.hd .nm{font-weight:700;font-size:20px}
+.hd .st{color:var(--muted);font-size:14px;margin-top:2px}
+.btn{width:100%;height:54px;border:none;border-radius:16px;font-family:'DM Sans';font-weight:700;font-size:16px;cursor:pointer;background:linear-gradient(135deg,#FFC247,var(--accent));color:#1a1206}
+.sec{margin-top:22px}
+.sec h4{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 4px 8px}
+.row{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);padding:15px 16px;font-size:15px}
+.row:first-child{border-radius:14px 14px 0 0}.row:last-child{border-radius:0 0 14px 14px}.row+.row{border-top:0}
+.row .v{color:var(--muted);font-family:'JetBrains Mono';font-size:13px}
+.foot{margin-top:auto;text-align:center;color:#5a5f6a;font-size:12px;font-family:'JetBrains Mono'}
+</style></head>
+<body>
+  <div class="hd">
+    <div class="ava">М</div>
+    <div><div class="nm">Гость</div><div class="st">Войди, чтобы сохранять данные в облако</div></div>
+  </div>
+  <button class="btn" onclick="alert('Вход через Supabase — Фаза 2')">Войти</button>
+
+  <div class="sec"><h4>Данные</h4>
+    <div class="row"><span>Резервные копии</span><span class="v">Supabase · Фаза 2</span></div>
+    <div class="row"><span>Синхронизация</span><span class="v">локально</span></div>
+    <div class="row"><span>Экспорт данных</span><span class="v">скоро</span></div>
+  </div>
+  <div class="sec"><h4>Настройки</h4>
+    <div class="row"><span>Фигура по умолчанию</span><span class="v">Звезда</span></div>
+    <div class="row"><span>Уведомления</span><span class="v">выкл</span></div>
+    <div class="row"><span>Тема</span><span class="v">Тёмная</span></div>
+  </div>
+  <div class="foot">Маяк · Трекер привычек · v0.1</div>
+<script>try{parent.postMessage({type:'tab-ready',tab:'profile'},'*');}catch(e){}</script>
+</body></html>
