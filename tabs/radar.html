@@ -126,9 +126,8 @@ svg{width:100%;display:block;overflow:visible;touch-action:manipulation}
         <div class="r1" style="margin-top:4px"><span class="pts"><span id="dayPts">0</span><small> / 100</small></span><span class="sub" id="dayName"></span></div>
         <div class="track"><div class="fill" id="dayFill" style="width:0%"></div></div>
       </div>
-      <div class="seg"><button id="segStar" class="on" onclick="setFig('star')">Звезда</button><button id="segRadar" onclick="setFig('radar')">Радар</button></div>
-      <div class="figwrap"><svg id="fig" viewBox="-46 -34 452 446"></svg></div>
-      <div class="idxline"><span class="n" id="idxN">0</span> <span class="l">· Индекс Маяка · нажми на сектор</span></div>
+      <div class="figwrap"><svg id="fig" viewBox="0 0 360 360"></svg></div>
+      <div class="idxline"><span class="l">Нажми на дольку — отметь сегодняшнее и закрой</span></div>
 
       <div class="secpanel" id="secpanel">
         <div class="hd"><span class="cd" id="spDot"></span><span class="nm" id="spName"></span><span class="cnt" id="spCnt"></span></div>
@@ -174,18 +173,18 @@ svg{width:100%;display:block;overflow:visible;touch-action:manipulation}
 
 <script>
 /* ===== ДАННЫЕ ===== */
-const C={x:180,y:180}, R=150, r=R/Math.sqrt(3), Rmax=150;
+const C={x:180,y:180}, Ro=162, Ri=84;
 function P(a,rad){const t=a*Math.PI/180;return{x:C.x+rad*Math.sin(t),y:C.y-rad*Math.cos(t)};}
 function fmtP(p){return p.map(q=>q.x.toFixed(1)+','+q.y.toFixed(1)).join(' ');}
 const WD=['вс','пн','вт','ср','чт','пт','сб']; // getDay 0..6
 const TODAY=(new Date()).getDay();
 const DIRS=[
- {id:'duh',  name:'Дух',          ic:'✦', a:0,   col:'#64D2FF', tri:'Ф'},
- {id:'komm', name:'Коммуникации', ic:'●', a:60,  col:'#FF9F0A', tri:'Р'},
- {id:'telo', name:'Тело',         ic:'♥', a:120, col:'#30D158', tri:'Ф'},
- {id:'delo', name:'Дело',         ic:'◆', a:180, col:'#FFD54A', tri:'Р'},
- {id:'razum',name:'Разум',        ic:'■', a:240, col:'#BF5AF2', tri:'Ф'},
- {id:'energy',name:'Энергия',     ic:'◈', a:300, col:'#FF453A', tri:'Р'},
+ {id:'duh',  name:'Дух',          ic:'🕊', a:0,   col:'#64D2FF', tri:'Ф'},
+ {id:'komm', name:'Коммуникации', ic:'👥', a:60,  col:'#FF9F0A', tri:'Р'},
+ {id:'telo', name:'Тело',         ic:'💪', a:120, col:'#30D158', tri:'Ф'},
+ {id:'delo', name:'Дело',         ic:'💼', a:180, col:'#FFD54A', tri:'Р'},
+ {id:'razum',name:'Разум',        ic:'🧠', a:240, col:'#BF5AF2', tri:'Ф'},
+ {id:'energy',name:'Энергия',     ic:'🔋', a:300, col:'#FF453A', tri:'Р'},
 ];
 const dirById=id=>DIRS.find(d=>d.id===id);
 let tid=0;
@@ -206,7 +205,7 @@ let tasks=[
  ['delo','Контент-выход',[1,3,5],39,35,false],
 ].map(t=>({id:++tid,dir:t[0],name:t[1],sched:t[2],normQ:t[3],checksQ:t[4],doneToday:t[5]}));
 
-let fig='star', selDir=null, editId=null, curScreen='home';
+let selDir=null, editId=null, curScreen='home';
 let fmSched=[]; // дни недели формы
 
 /* ===== РАСЧЁТЫ ===== */
@@ -225,48 +224,48 @@ const BANDS=[[0,'Железо','#9aa0aa'],[15,'Бронза','#C97B43'],[30,'С�
   [45,'Золото','#E0A23C'],[60,'Платина','#7FE0D0'],[75,'Алмаз','#7CC4FF'],[90,'Обсидиан','#B58Cff']];
 const bandFor=i=>{let b=BANDS[0];for(const x of BANDS)if(i>=x[0])b=x;return b;};
 
-/* ===== ФИГУРА ===== */
-function ringPts(k){let p=[];for(let a=0;a<360;a+=30){const rad=(a%60===0)?(r+k*(R-r)):r;p.push(P(a,rad));}return fmtP(p);}
-function hexValleys(){let p=[];for(let a=30;a<360;a+=60)p.push(P(a,r));return fmtP(p);}
-function kitePts(d,k){k=Math.max(0,Math.min(k,1));const vL=P(d.a-30,r),vR=P(d.a+30,r),tip=P(d.a,r+k*(R-r));return fmtP([C,vL,tip,vR]);}
-function hexRing(s){return fmtP(DIRS.map(d=>P(d.a,Rmax*s)));}
-
-function drawStar(){
+/* ===== ФИГУРА: КОЛЕСО-ДОЛЬКИ ===== */
+const GAP=1.6; // угловой зазор между дольками, °
+function annular(a1,a2,rIn,rOut){
+  const o1=P(a1,rOut),o2=P(a2,rOut),i2=P(a2,rIn),i1=P(a1,rIn);
+  return `M${o1.x.toFixed(1)} ${o1.y.toFixed(1)} A${rOut} ${rOut} 0 0 1 ${o2.x.toFixed(1)} ${o2.y.toFixed(1)} `+
+         `L${i2.x.toFixed(1)} ${i2.y.toFixed(1)} A${rIn} ${rIn} 0 0 0 ${i1.x.toFixed(1)} ${i1.y.toFixed(1)} Z`;
+}
+function drawWheel(){
   const sel=selDir;
-  let g='';
-  for(let i=1;i<=10;i++){const op=i===10?.5:(i%5===0?.28:.12);g+=`<polygon points="${ringPts(i/10)}" fill="none" stroke="#3a3a46" stroke-opacity="${op}" stroke-width="${i===10?1.3:1}"/>`;}
-  g+=`<polygon points="${hexValleys()}" fill="none" stroke="#4a4a57" stroke-width="1.1" stroke-opacity=".6"/>`;
-  let sp='';for(let a=30;a<360;a+=60){const p=P(a,r);sp+=`<line x1="${C.x}" y1="${C.y}" x2="${p.x.toFixed(1)}" y2="${p.y.toFixed(1)}" stroke="#2c2c36" stroke-width="1"/>`;}
-  let kites=DIRS.map(d=>{const k=Math.min(dirQ(d.id),1);const dim=sel&&sel!==d.id;
-    return `<polygon class="hit" data-id="${d.id}" points="${kitePts(d,k)}" fill="${d.col}" fill-opacity="${dim?.18:.6}" stroke="${d.col}" stroke-opacity="${dim?.3:1}" stroke-width="2.2" stroke-linejoin="round" style="cursor:pointer;transition:fill-opacity .25s,stroke-opacity .25s"/>`;}).join('');
-  let labels=DIRS.map(d=>{const o=P(d.a,R+22);const an=Math.abs(Math.sin(d.a*Math.PI/180))<.3?'middle':(Math.sin(d.a*Math.PI/180)>0?'start':'end');
+  let seg='';
+  DIRS.forEach(d=>{
+    const a1=d.a-30+GAP, a2=d.a+30-GAP;
+    const k=Math.min(dirQ(d.id),1);
+    const rFill=Ri+k*(Ro-Ri);
     const dim=sel&&sel!==d.id;
-    return `<text class="hit" data-id="${d.id}" x="${o.x.toFixed(1)}" y="${(o.y+(d.a===0?-2:d.a===180?12:4)).toFixed(1)}" text-anchor="${an}" fill="${d.col}" fill-opacity="${dim?.4:1}" font-family="JetBrains Mono" font-weight="700" font-size="12" style="cursor:pointer">${d.name}</text>`;}).join('');
-  document.getElementById('fig').innerHTML=g+sp+kites+`<circle cx="${C.x}" cy="${C.y}" r="8" fill="#050507" stroke="#4a4a57" stroke-width="1.3"/><circle cx="${C.x}" cy="${C.y}" r="2.6" fill="#8A8F99"/>`+labels;
+    // 1) трек-долька (большая тап-зона, всегда видна)
+    seg+=`<path class="hit" data-id="${d.id}" d="${annular(a1,a2,Ri,Ro)}" fill="${d.col}" fill-opacity="${dim?.10:.16}" stroke="${sel===d.id?'#F5F5F7':d.col}" stroke-opacity="${sel===d.id?.9:.35}" stroke-width="${sel===d.id?2:1}" style="cursor:pointer;transition:fill-opacity .2s,stroke-opacity .2s"/>`;
+    // 2) заливка по квартальному %
+    if(k>0.01) seg+=`<path d="${annular(a1,a2,Ri,rFill)}" fill="${d.col}" fill-opacity="${dim?.32:.9}" pointer-events="none" style="transition:fill-opacity .2s"/>`;
+    // 3) подпись: эмодзи + название + %
+    const rMid=(Ri+Ro)/2, m=P(d.a,rMid);
+    seg+=`<g pointer-events="none" fill-opacity="${dim?.5:1}">`+
+      `<text x="${m.x.toFixed(1)}" y="${(m.y-14).toFixed(1)}" text-anchor="middle" font-size="17">${d.ic}</text>`+
+      `<text x="${m.x.toFixed(1)}" y="${(m.y+5).toFixed(1)}" text-anchor="middle" fill="#F5F5F7" font-family="DM Sans" font-weight="700" font-size="13">${d.name}</text>`+
+      `<text x="${m.x.toFixed(1)}" y="${(m.y+20).toFixed(1)}" text-anchor="middle" fill="#F5F5F7" font-family="JetBrains Mono" font-weight="700" font-size="12" opacity=".85">${pc(dirQ(d.id))}%</text>`+
+      `</g>`;
+  });
+  // центр — Индекс Маяка
+  const idx=mayakIndex();
+  const center=`<circle cx="${C.x}" cy="${C.y}" r="${Ri-3}" fill="#0d0d12" stroke="#23232d" stroke-width="1.5"/>`+
+    `<text x="${C.x}" y="${C.y-2}" text-anchor="middle" fill="#FF9F0A" font-family="JetBrains Mono" font-weight="800" font-size="40">${idx}</text>`+
+    `<text x="${C.x}" y="${C.y+20}" text-anchor="middle" fill="#8A8F99" font-family="DM Sans" font-weight="600" font-size="11" letter-spacing="2">ИНДЕКС</text>`;
+  document.getElementById('fig').innerHTML=seg+center;
   bindHits();
 }
-function drawRadar(){
-  const sel=selDir;
-  let g='';for(let i=1;i<=5;i++){const op=i===5?.5:.2;g+=`<polygon points="${hexRing(i/5)}" fill="none" stroke="#3a3a46" stroke-opacity="${op}" stroke-width="${i===5?1.3:1}"/>`;}
-  let sp=DIRS.map(d=>{const p=P(d.a,Rmax);const hl=sel===d.id;return `<line x1="${C.x}" y1="${C.y}" x2="${p.x.toFixed(1)}" y2="${p.y.toFixed(1)}" stroke="${hl?d.col:'#26262f'}" stroke-opacity="${hl?.8:1}" stroke-width="${hl?2:1}"/>`;}).join('');
-  // подсветка выбранного сектора (клин)
-  let wedge='';if(sel){const d=dirById(sel);wedge=`<polygon points="${fmtP([C,P(d.a-30,Rmax),P(d.a,Rmax),P(d.a+30,Rmax)])}" fill="${d.col}" fill-opacity=".10"/>`;}
-  const pts=DIRS.map(d=>P(d.a,Rmax*Math.max(.001,Math.min(dirQ(d.id),1))));
-  const poly=`<polygon points="${fmtP(pts)}" fill="#FF9F0A" fill-opacity=".13" stroke="#FF9F0A" stroke-width="2.4" stroke-linejoin="round"/>`;
-  let dots=DIRS.map((d,i)=>{const hl=sel===d.id;return `<circle class="hit" data-id="${d.id}" cx="${pts[i].x.toFixed(1)}" cy="${pts[i].y.toFixed(1)}" r="${hl?8:6}" fill="${d.col}" stroke="#050507" stroke-width="2" style="cursor:pointer"/>`;}).join('');
-  let labels=DIRS.map(d=>{const o=P(d.a,Rmax+22);const an=Math.abs(Math.sin(d.a*Math.PI/180))<.3?'middle':(Math.sin(d.a*Math.PI/180)>0?'start':'end');
-    const dim=sel&&sel!==d.id;return `<text class="hit" data-id="${d.id}" x="${o.x.toFixed(1)}" y="${(o.y+(d.a===0?-2:d.a===180?12:4)).toFixed(1)}" text-anchor="${an}" fill="${d.col}" fill-opacity="${dim?.4:1}" font-family="JetBrains Mono" font-weight="700" font-size="12" style="cursor:pointer">${d.name}</text>`;}).join('');
-  document.getElementById('fig').innerHTML=g+wedge+sp+poly+dots+`<circle cx="${C.x}" cy="${C.y}" r="2.6" fill="#5a5f6a"/>`+labels;
-  bindHits();
-}
-function drawFig(){fig==='star'?drawStar():drawRadar();}
+function drawFig(){drawWheel();}
 function bindHits(){document.querySelectorAll('#fig .hit').forEach(el=>el.addEventListener('click',()=>tapSector(el.dataset.id)));}
 function tapSector(id){const open=document.getElementById('secpanel').classList.contains('open');if(open&&selDir===id)closeSec();else openSec(id);}
 
 /* ===== ГЛАВНЫЙ ===== */
 function renderHome(){
   drawFig();
-  document.getElementById('idxN').textContent=mayakIndex();
   const dp=dayPoints();
   document.getElementById('dayPts').textContent=dp.pts;
   document.getElementById('dayFill').style.width=dp.pts+'%';
@@ -360,7 +359,6 @@ function show(id){
   document.getElementById(id).classList.add('on');curScreen=id;
   if(id==='home')renderHome();
 }
-function setFig(f){fig=f;document.getElementById('segStar').classList.toggle('on',f==='star');document.getElementById('segRadar').classList.toggle('on',f==='radar');drawFig();}
 let _t;function toast(m){const n=document.getElementById('toast');n.textContent=m;n.classList.add('show');clearTimeout(_t);_t=setTimeout(()=>n.classList.remove('show'),2000);}
 
 show('home');
