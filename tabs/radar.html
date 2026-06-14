@@ -121,13 +121,8 @@ svg{width:100%;display:block;overflow:visible;touch-action:manipulation}
     <div class="sb"></div>
     <div class="topbar"><span class="beacon"><span class="dot"></span>МАЯК</span><span class="q" id="qLabel">Q2 · 2026</span></div>
     <div class="scroll">
-      <div class="day">
-        <div class="r1"><span class="lab">Прогресс дня</span><span class="sub" id="dayCount">0 из 0 задач</span></div>
-        <div class="r1" style="margin-top:4px"><span class="pts"><span id="dayPts">0</span><small> / 100</small></span><span class="sub" id="dayName"></span></div>
-        <div class="track"><div class="fill" id="dayFill" style="width:0%"></div></div>
-      </div>
       <div class="figwrap"><svg id="fig" viewBox="0 0 360 360"></svg></div>
-      <div class="idxline"><span class="l">Нажми на дольку — отметь сегодняшнее и закрой</span></div>
+      <div class="idxline"><span class="l" id="idxline">Индекс Маяка</span></div>
 
       <div class="secpanel" id="secpanel">
         <div class="hd"><span class="cd" id="spDot"></span><span class="nm" id="spName"></span><span class="cnt" id="spCnt"></span></div>
@@ -173,7 +168,7 @@ svg{width:100%;display:block;overflow:visible;touch-action:manipulation}
 
 <script>
 /* ===== ДАННЫЕ ===== */
-const C={x:180,y:180}, Ro=162, Ri=84;
+const C={x:180,y:180}, Ro=150, Ri=92;
 function P(a,rad){const t=a*Math.PI/180;return{x:C.x+rad*Math.sin(t),y:C.y-rad*Math.cos(t)};}
 function fmtP(p){return p.map(q=>q.x.toFixed(1)+','+q.y.toFixed(1)).join(' ');}
 const WD=['вс','пн','вт','ср','чт','пт','сб']; // getDay 0..6
@@ -251,11 +246,16 @@ function drawWheel(){
       `<text x="${m.x.toFixed(1)}" y="${(m.y+20).toFixed(1)}" text-anchor="middle" fill="#F5F5F7" font-family="JetBrains Mono" font-weight="700" font-size="12" opacity=".85">${pc(dirQ(d.id))}%</text>`+
       `</g>`;
   });
-  // центр — Индекс Маяка
-  const idx=mayakIndex();
-  const center=`<circle cx="${C.x}" cy="${C.y}" r="${Ri-3}" fill="#0d0d12" stroke="#23232d" stroke-width="1.5"/>`+
-    `<text x="${C.x}" y="${C.y-2}" text-anchor="middle" fill="#FF9F0A" font-family="JetBrains Mono" font-weight="800" font-size="40">${idx}</text>`+
-    `<text x="${C.x}" y="${C.y+20}" text-anchor="middle" fill="#8A8F99" font-family="DM Sans" font-weight="600" font-size="11" letter-spacing="2">ИНДЕКС</text>`;
+  // центр — ПРОГРЕСС ДНЯ (кольцо + % + X/Y задач)
+  const dp=dayPoints();
+  const rRing=Ri-15, circ=2*Math.PI*rRing, fillLen=circ*dp.pts/100;
+  const center=
+    `<circle cx="${C.x}" cy="${C.y}" r="${Ri-3}" fill="#0d0d12" stroke="#23232d" stroke-width="1.5"/>`+
+    `<circle cx="${C.x}" cy="${C.y}" r="${rRing}" fill="none" stroke="#1b1b22" stroke-width="6"/>`+
+    `<circle cx="${C.x}" cy="${C.y}" r="${rRing}" fill="none" stroke="#FF9F0A" stroke-width="6" stroke-linecap="round" stroke-dasharray="${fillLen.toFixed(1)} ${(circ-fillLen).toFixed(1)}" transform="rotate(-90 ${C.x} ${C.y})" style="transition:stroke-dasharray .5s"/>`+
+    `<text x="${C.x}" y="${C.y-4}" text-anchor="middle" fill="#F5F5F7" font-family="JetBrains Mono" font-weight="800" font-size="36">${dp.pts}%</text>`+
+    `<text x="${C.x}" y="${C.y+18}" text-anchor="middle" fill="#8A8F99" font-family="JetBrains Mono" font-weight="700" font-size="13">${dp.done} / ${dp.total} задач</text>`+
+    `<text x="${C.x}" y="${C.y+34}" text-anchor="middle" fill="#5a5f6a" font-family="DM Sans" font-weight="600" font-size="10" letter-spacing="2">СЕГОДНЯ</text>`;
   document.getElementById('fig').innerHTML=seg+center;
   bindHits();
 }
@@ -266,11 +266,8 @@ function tapSector(id){const open=document.getElementById('secpanel').classList.
 /* ===== ГЛАВНЫЙ ===== */
 function renderHome(){
   drawFig();
-  const dp=dayPoints();
-  document.getElementById('dayPts').textContent=dp.pts;
-  document.getElementById('dayFill').style.width=dp.pts+'%';
-  document.getElementById('dayCount').textContent=dp.done+' из '+dp.total+' задач';
-  document.getElementById('dayName').textContent='сегодня, '+WD[TODAY];
+  const idx=mayakIndex(),b=bandFor(idx);
+  document.getElementById('idxline').innerHTML=`Индекс Маяка <b style="color:#F5F5F7">${idx}</b> · <span style="color:${b[2]}">${b[1]}</span> · нажми на дольку`;
 }
 function openSec(id){
   selDir=id; drawFig();
