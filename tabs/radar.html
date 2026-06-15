@@ -71,6 +71,20 @@ svg{width:100%;display:block;overflow:visible;touch-action:manipulation}
 .lnk{background:none;border:none;color:var(--accent);font-family:'DM Sans';font-weight:600;font-size:14px;cursor:pointer;padding:6px 0}
 .lnk.dim{color:var(--muted)}
 .hint{color:var(--muted);font-size:12.5px;text-align:center;padding:14px 30px 4px;line-height:1.5}
+/* аккордеон-список направлений */
+.dlist{padding:12px 14px 8px;display:flex;flex-direction:column;gap:8px}
+.litem{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:border-color .15s}
+.litem.open{border-color:var(--accent)}
+.lrow{display:grid;grid-template-columns:13px 1fr 86px 44px;align-items:center;gap:11px;padding:14px 15px;cursor:pointer}
+.lrow:active{background:var(--card2)}
+.lrow .cd{width:12px;height:12px;border-radius:4px}
+.lrow .lname{font-weight:600;font-size:15px}
+.lrow .lbar{height:7px;border-radius:5px;background:#1b1b22;overflow:hidden}
+.lrow .lbar i{display:block;height:100%;border-radius:5px;transition:width .5s cubic-bezier(.22,1,.36,1)}
+.lrow .lpc{font-family:'JetBrains Mono';font-weight:700;font-size:14px;text-align:right}
+.lexp{border-top:1px solid var(--line);padding:2px 6px 6px}
+.lexp .empty{color:var(--muted);font-size:14px;padding:16px;text-align:center;line-height:1.5}
+.lexp .foot{display:flex;justify-content:flex-end;padding:2px 10px 6px}
 
 /* общие кнопки/инпуты */
 .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:54px;border:none;border-radius:16px;font-family:'DM Sans';font-weight:700;font-size:16px;cursor:pointer;transition:transform .12s}
@@ -123,14 +137,7 @@ svg{width:100%;display:block;overflow:visible;touch-action:manipulation}
     <div class="scroll">
       <div class="figwrap"><svg id="fig" viewBox="0 0 360 360"></svg></div>
       <div class="idxline"><span class="l" id="idxline">Индекс Маяка</span></div>
-
-      <div class="secpanel" id="secpanel">
-        <div class="hd"><span class="cd" id="spDot"></span><span class="nm" id="spName"></span><span class="cnt" id="spCnt"></span></div>
-        <div class="closed-badge" id="spBadge">✓ Сектор закрыт на сегодня</div>
-        <div class="tlist" id="spTasks"></div>
-        <div class="foot" style="justify-content:flex-end"><button class="lnk" id="spEdit">Изменить задачи ›</button></div>
-      </div>
-      <p class="hint" id="homeHint">Нажми на сектор фигуры — он раскроется. Отметь галочками, что сделал сегодня, и закрой его.</p>
+      <div class="dlist" id="dlist"></div>
     </div>
   </section>
 
@@ -241,9 +248,8 @@ function drawWheel(){
     // 3) подпись: эмодзи + название + %
     const rMid=(Ri+Ro)/2, m=P(d.a,rMid);
     seg+=`<g pointer-events="none" fill-opacity="${dim?.5:1}">`+
-      `<text x="${m.x.toFixed(1)}" y="${(m.y-14).toFixed(1)}" text-anchor="middle" font-size="17">${d.ic}</text>`+
-      `<text x="${m.x.toFixed(1)}" y="${(m.y+5).toFixed(1)}" text-anchor="middle" fill="#F5F5F7" font-family="DM Sans" font-weight="700" font-size="13">${d.name}</text>`+
-      `<text x="${m.x.toFixed(1)}" y="${(m.y+20).toFixed(1)}" text-anchor="middle" fill="#F5F5F7" font-family="JetBrains Mono" font-weight="700" font-size="12" opacity=".85">${pc(dirQ(d.id))}%</text>`+
+      `<text x="${m.x.toFixed(1)}" y="${(m.y-2).toFixed(1)}" text-anchor="middle" fill="#F5F5F7" font-family="DM Sans" font-weight="700" font-size="13.5">${d.name}</text>`+
+      `<text x="${m.x.toFixed(1)}" y="${(m.y+16).toFixed(1)}" text-anchor="middle" fill="#F5F5F7" font-family="JetBrains Mono" font-weight="700" font-size="12" opacity=".85">${pc(dirQ(d.id))}%</text>`+
       `</g>`;
   });
   // центр — ПРОГРЕСС ДНЯ (кольцо + % + X/Y задач)
@@ -261,44 +267,47 @@ function drawWheel(){
 }
 function drawFig(){drawWheel();}
 function bindHits(){document.querySelectorAll('#fig .hit').forEach(el=>el.addEventListener('click',()=>tapSector(el.dataset.id)));}
-function tapSector(id){const open=document.getElementById('secpanel').classList.contains('open');if(open&&selDir===id)closeSec();else openSec(id);}
+function tapSector(id){
+  selDir = (selDir===id ? null : id);
+  drawFig(); renderList();
+  if(selDir) setTimeout(()=>{const r=document.querySelector('.litem.open');if(r)r.scrollIntoView({behavior:'smooth',block:'nearest'});},120);
+}
 
 /* ===== ГЛАВНЫЙ ===== */
 function renderHome(){
-  drawFig();
+  drawFig(); renderList();
   const idx=mayakIndex(),b=bandFor(idx);
-  document.getElementById('idxline').innerHTML=`Индекс Маяка <b style="color:#F5F5F7">${idx}</b> · <span style="color:${b[2]}">${b[1]}</span> · нажми на дольку`;
+  document.getElementById('idxline').innerHTML=`Индекс Маяка <b style="color:#F5F5F7">${idx}</b> · <span style="color:${b[2]}">${b[1]}</span>`;
 }
-function openSec(id){
-  selDir=id; drawFig();
-  const d=dirById(id);
-  document.getElementById('spDot').style.background=d.col;
-  document.getElementById('spName').textContent=d.name;
-  const tt=dirTodayTasks(id), done=tt.filter(t=>t.doneToday).length;
-  document.getElementById('spCnt').textContent=tt.length?(done+'/'+tt.length+' сегодня'):'нет задач сегодня';
-  const badge=document.getElementById('spBadge');badge.style.background='color-mix(in srgb,'+d.col+' 18%,transparent)';badge.style.color=d.col;
-  const list=document.getElementById('spTasks');
-  if(!tt.length){
-    list.innerHTML='<p class="muted" style="padding:18px 14px;font-size:14px;line-height:1.5">На сегодня ('+WD[TODAY]+') задач в этом направлении нет.<br>Добавь или измени расписание в «Изменить задачи».</p>';
-  }else{
-    list.innerHTML=tt.map(t=>`<div class="titem ${t.doneToday?'done':''}" style="color:${d.col}" onclick="toggle(${t.id})">
-      <span class="box">${t.doneToday?'✓':''}</span><span class="nm">${t.name}</span><span class="q">${t.checksQ}/${t.normQ} кв</span></div>`).join('');
-  }
-  const sp=document.getElementById('secpanel');
-  sp.classList.toggle('alldone', tt.length>0 && done===tt.length);
-  sp.classList.add('open');
-  document.getElementById('homeHint').style.display='none';
-  document.getElementById('spEdit').onclick=()=>openManage(id);
-  setTimeout(()=>sp.scrollIntoView({behavior:'smooth',block:'nearest'}),120);
+/* аккордеон-список направлений (тап = развернуть/свернуть, галочки внутри) */
+function renderList(){
+  document.getElementById('dlist').innerHTML=DIRS.map(d=>{
+    const q=dirQ(d.id), open=selDir===d.id;
+    const tt=dirTodayTasks(d.id), done=tt.filter(t=>t.doneToday).length;
+    const allDone=tt.length>0 && done===tt.length;
+    let exp='';
+    if(open){
+      const rows=tt.length
+        ? tt.map(t=>`<div class="titem ${t.doneToday?'done':''}" style="color:${d.col}" onclick="event.stopPropagation();toggle(${t.id})"><span class="box">${t.doneToday?'✓':''}</span><span class="nm">${t.name}</span><span class="q">${t.checksQ}/${t.normQ} кв</span></div>`).join('')
+        : `<div class="empty">На сегодня (${WD[TODAY]}) задач в этом направлении нет.<br>Добавь или измени расписание ниже.</div>`;
+      exp=`<div class="lexp">${rows}<div class="foot"><button class="lnk" onclick="event.stopPropagation();openManage('${d.id}')">Изменить задачи ›</button></div></div>`;
+    }
+    return `<div class="litem ${open?'open':''}">
+      <div class="lrow" onclick="tapSector('${d.id}')">
+        <span class="cd" style="background:${d.col}"></span>
+        <span class="lname">${d.name}${allDone?' <span style="color:'+d.col+'">✓</span>':''}</span>
+        <span class="lbar"><i style="width:${pc(Math.min(q,1))}%;background:${d.col}"></i></span>
+        <span class="lpc" style="color:${d.col}">${pc(q)}%</span>
+      </div>${exp}</div>`;
+  }).join('');
 }
-function closeSec(){selDir=null;drawFig();document.getElementById('secpanel').classList.remove('open');document.getElementById('homeHint').style.display='block';}
 function toggle(id){
   const t=tasks.find(x=>x.id===id);if(!t)return;
   if(t.doneToday){t.doneToday=false;t.checksQ=Math.max(0,t.checksQ-1);}
   else{t.doneToday=true;t.checksQ=Math.min(t.checksQ+1,Math.round(t.normQ*1.2));}
-  renderHome();openSec(selDir);
-  const tt=dirTodayTasks(selDir),done=tt.filter(x=>x.doneToday).length;
-  if(tt.length&&done===tt.length){toast('Сектор «'+dirById(selDir).name+'» закрыт ✓');}
+  drawFig(); renderList();
+  const tt=dirTodayTasks(t.dir),done=tt.filter(x=>x.doneToday).length;
+  if(tt.length&&done===tt.length) toast('«'+dirById(t.dir).name+'» закрыт на сегодня ✓');
 }
 
 /* ===== УПРАВЛЕНИЕ ===== */
