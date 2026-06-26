@@ -42,10 +42,10 @@ svg{width:100%;display:block;overflow:visible;touch-action:manipulation}
 .lrow:active{opacity:.6}
 .lrow .chev{transition:transform .2s;display:block}
 .litem.open .chev{transform:rotate(180deg)}
-.lrow .lname{font-weight:600;font-size:14.5px}
-.lrow .lbar{height:7px;border-radius:5px;background:#1b1b22;overflow:hidden}
+.lrow .lname{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:15px;color:#aeb2ba}
+.lrow .lbar{height:6px;border-radius:5px;background:#2a2a33;overflow:hidden}
 .lrow .lbar i{display:block;height:100%;border-radius:5px;transition:width .5s cubic-bezier(.22,1,.36,1)}
-.lrow .lpc{font-family:'JetBrains Mono';font-weight:700;font-size:14px;text-align:right}
+.lrow .lpc{font-family:'JetBrains Mono';font-weight:600;font-size:14px;text-align:right}
 .lexp{border-top:1px solid var(--line);padding:2px 6px 6px}
 .lexp .empty{color:var(--muted);font-size:14px;padding:16px;text-align:center;line-height:1.5}
 .lexp .foot{display:flex;justify-content:flex-end;padding:2px 10px 6px}
