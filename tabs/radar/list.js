@@ -6,8 +6,7 @@ function chevSVG(col){
 function renderList(){
   document.getElementById('dlist').innerHTML=DIRS.map(d=>{
     const q=dirQ(d.id), open=selDir===d.id;
-    const tt=dirTodayTasks(d.id), done=tt.filter(t=>t.doneToday).length;
-    const allDone=tt.length>0 && done===tt.length;
+    const tt=dirTodayTasks(d.id);
     let exp='';
     if(open){
       const rows=tt.length
@@ -18,7 +17,7 @@ function renderList(){
     return `<div class="litem ${open?'open':''}">
       <div class="lrow" onclick="tapSector('${d.id}')">
         ${chevSVG(d.col)}
-        <span class="lname">${d.name}${allDone?' <span style="color:'+d.col+'">✓</span>':''}</span>
+        <span class="lname">${d.name}</span>
         <span class="lbar"><i style="width:${pc(Math.min(q,1))}%;background:${d.col}"></i></span>
         <span class="lpc" style="color:${d.col}">${pc(q)}%</span>
       </div>${exp}</div>`;

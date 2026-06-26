@@ -19,13 +19,14 @@ body{background:#050507;color:var(--text);font-family:'DM Sans',sans-serif;overf
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
 .topbar .q{font-family:'JetBrains Mono';font-size:13px;color:var(--muted)}
 
-/* шапка «Непрерывно» / ударный режим — одна строка */
-.streak{display:flex;justify-content:space-between;align-items:center;margin:6px 16px 0;padding:9px 16px;background:var(--card);border:1px solid var(--line);border-radius:15px}
-.stk-info{display:flex;align-items:baseline;gap:9px}
-.stk-lab{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.stk-days{font-family:'JetBrains Mono';font-weight:700;font-size:15px;color:var(--muted)}
-.stk-days b{color:var(--text);font-size:22px;font-weight:800}
-.stk-badge{padding:8px 14px;border-radius:12px;font-family:'JetBrains Mono';font-weight:700;font-size:13.5px;color:var(--accent);border:1.5px solid var(--accent);background:transparent}
+/* ударный режим — плоская строка без рамки + иконка календаря */
+.streak{display:flex;justify-content:space-between;align-items:center;margin:4px 18px 0;padding:6px 2px}
+.stk-info{display:flex;align-items:baseline;gap:10px}
+.stk-badge{font-family:'JetBrains Mono';font-weight:800;font-size:15px;color:var(--accent)}
+.stk-days{font-family:'JetBrains Mono';font-weight:700;font-size:14px;color:var(--muted)}
+.stk-days b{color:var(--text);font-size:20px;font-weight:800}
+.stk-cal{background:none;border:none;color:var(--muted);cursor:pointer;padding:5px;display:flex;border-radius:9px}
+.stk-cal:active{color:var(--accent);background:var(--card2)}
 
 /* фигура */
 svg{width:100%;display:block;overflow:visible;touch-action:manipulation}
@@ -33,12 +34,12 @@ svg{width:100%;display:block;overflow:visible;touch-action:manipulation}
 .idxline{text-align:center;margin-top:0}
 .idxline .l{font-size:11px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
 
-/* аккордеон-список направлений */
-.dlist{padding:6px 14px 4px;display:flex;flex-direction:column;gap:7px}
-.litem{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden;transition:border-color .15s}
-.litem.open{border-color:var(--accent)}
-.lrow{display:grid;grid-template-columns:18px 1fr 84px 42px;align-items:center;gap:11px;padding:9px 15px;cursor:pointer}
-.lrow:active{background:var(--card2)}
+/* аккордеон-список направлений — плоский, как у SELV (без рамок) */
+.dlist{padding:2px 18px 4px;display:flex;flex-direction:column;gap:0}
+.litem{border-radius:13px;overflow:hidden;transition:background .15s}
+.litem.open{background:var(--card)}
+.lrow{display:grid;grid-template-columns:18px 1fr 84px 42px;align-items:center;gap:13px;padding:11px 8px;cursor:pointer}
+.lrow:active{opacity:.6}
 .lrow .chev{transition:transform .2s;display:block}
 .litem.open .chev{transform:rotate(180deg)}
 .lrow .lname{font-weight:600;font-size:14.5px}
@@ -82,3 +83,20 @@ svg{width:100%;display:block;overflow:visible;touch-action:manipulation}
 
 .toast{position:absolute;left:50%;transform:translateX(-50%);bottom:30px;background:var(--card2);border:1px solid var(--line);padding:10px 16px;border-radius:13px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:60;max-width:330px;text-align:center}
 .toast.show{opacity:1}
+
+/* календарь серии (нижний лист) */
+.modal{position:absolute;inset:0;background:rgba(0,0,0,.62);display:none;align-items:flex-end;z-index:80}
+.modal.show{display:flex}
+.modal-card{width:100%;background:var(--card);border:1px solid var(--line);border-bottom:0;border-radius:22px 22px 0 0;padding:18px 18px calc(20px + env(safe-area-inset-bottom,8px))}
+.modal-hd{display:flex;justify-content:space-between;align-items:center}
+.modal-hd span{font-family:'JetBrains Mono';font-weight:800;font-size:17px;color:var(--accent)}
+.modal-hd button{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:2px 6px}
+.cal-sub{color:var(--muted);font-size:13px;margin:4px 0 14px}
+.cal-sub b{color:var(--text);font-family:'JetBrains Mono'}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal-cell{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono';font-size:12px;font-weight:700;background:#1b1b22;color:var(--muted2)}
+.cal-cell.done{background:rgba(255,159,10,.85);color:#1a1206}
+.cal-cell.miss{background:rgba(255,69,58,.22);color:#FF453A}
+.cal-cell.today{box-shadow:inset 0 0 0 2px var(--accent)}
+.cal-legend{display:flex;gap:18px;margin-top:14px;font-size:12px;color:var(--muted)}
+.cal-legend i{width:12px;height:12px;border-radius:4px;display:inline-block;margin-right:6px;vertical-align:-1px}

@@ -14,6 +14,7 @@ function show(id){
   if(id==='home')renderHome();
 }
 
+document.getElementById('streakCal').onclick=openCal;
 show('home');
 /* сигнал shell-у, что модуль загрузился (для error-boundary/изоляции) */
 try{parent.postMessage({type:'tab-ready',tab:'radar'},'*');}catch(e){}
