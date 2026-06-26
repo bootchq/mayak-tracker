@@ -1,0 +1,83 @@
+:root{
+  --bg:#050507; --card:#0d0d12; --card2:#14141b; --line:#23232d; --line2:#1a1a22;
+  --text:#F5F5F7; --muted:#8A8F99; --muted2:#5a5f6a; --accent:#FF9F0A;
+  --duh:#64D2FF; --telo:#30D158; --razum:#BF5AF2; --komm:#FF9F0A; --delo:#FFD54A; --energy:#FF453A;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:#050507;color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden}
+.num{font-family:'JetBrains Mono',monospace}
+.phone{position:relative;width:100%;height:100%;min-height:100dvh;background:var(--bg);overflow:hidden;display:flex;flex-direction:column}
+.screen{position:absolute;inset:0;display:none;flex-direction:column}
+.screen.on{display:flex}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:18px}
+.sb{height:env(safe-area-inset-top,12px);min-height:12px}
+.muted{color:var(--muted)} .tiny{font-size:12px}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 20px 6px}
+.beacon{display:inline-flex;align-items:center;gap:8px;font-weight:800;letter-spacing:.14em;font-size:14px}
+.beacon .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);animation:pulse 2.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.topbar .q{font-family:'JetBrains Mono';font-size:13px;color:var(--muted)}
+
+/* шапка «Непрерывно» / ударный режим */
+.streak{display:flex;justify-content:space-between;align-items:center;margin:6px 18px 2px;padding:13px 18px;background:var(--card);border:1px solid var(--line);border-radius:18px}
+.streak .stk-lab{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.streak .stk-days{font-family:'JetBrains Mono';font-weight:800;font-size:30px;line-height:1.05;margin-top:3px}
+.streak .stk-days small{color:var(--muted);font-size:16px;font-weight:700}
+.streak .stk-badge{padding:9px 16px;border-radius:14px;font-family:'JetBrains Mono';font-weight:700;font-size:15px;color:var(--accent);border:1.5px solid var(--accent);background:transparent}
+
+/* фигура */
+svg{width:100%;display:block;overflow:visible;touch-action:manipulation}
+.figwrap{padding:2px 10px 0}
+.idxline{text-align:center;margin-top:-2px}
+.idxline .l{font-size:11px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
+
+/* аккордеон-список направлений */
+.dlist{padding:12px 14px 8px;display:flex;flex-direction:column;gap:8px}
+.litem{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:border-color .15s}
+.litem.open{border-color:var(--accent)}
+.lrow{display:grid;grid-template-columns:20px 1fr 86px 44px;align-items:center;gap:11px;padding:14px 15px;cursor:pointer}
+.lrow:active{background:var(--card2)}
+.lrow .chev{transition:transform .2s;display:block}
+.litem.open .chev{transform:rotate(180deg)}
+.lrow .lname{font-weight:600;font-size:15px}
+.lrow .lbar{height:7px;border-radius:5px;background:#1b1b22;overflow:hidden}
+.lrow .lbar i{display:block;height:100%;border-radius:5px;transition:width .5s cubic-bezier(.22,1,.36,1)}
+.lrow .lpc{font-family:'JetBrains Mono';font-weight:700;font-size:14px;text-align:right}
+.lexp{border-top:1px solid var(--line);padding:2px 6px 6px}
+.lexp .empty{color:var(--muted);font-size:14px;padding:16px;text-align:center;line-height:1.5}
+.lexp .foot{display:flex;justify-content:flex-end;padding:2px 10px 6px}
+
+/* задачи (галочки) */
+.titem{display:flex;align-items:center;gap:13px;padding:13px 12px;border-radius:14px;cursor:pointer;transition:background .15s}
+.titem:active{background:var(--card2)}
+.titem .box{width:28px;height:28px;border-radius:9px;border:2px solid var(--muted2);flex:none;display:flex;align-items:center;justify-content:center;font-size:16px;color:#08120a;transition:.18s}
+.titem.done .box{background:currentColor;border-color:transparent}
+.titem .nm{flex:1;font-size:15.5px;font-weight:500}
+.titem.done .nm{color:var(--muted);text-decoration:line-through}
+.titem .q{font-family:'JetBrains Mono';font-size:12px;color:var(--muted2)}
+.lnk{background:none;border:none;color:var(--accent);font-family:'DM Sans';font-weight:600;font-size:14px;cursor:pointer;padding:6px 0}
+
+/* кнопки / инпуты */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:54px;border:none;border-radius:16px;font-family:'DM Sans';font-weight:700;font-size:16px;cursor:pointer;transition:transform .12s}
+.btn:active{transform:scale(.97)}
+.btn-gold{background:linear-gradient(135deg,#FFC247,var(--accent));color:#1a1206}
+.btn-ghost{background:var(--card2);color:var(--text);border:1px solid var(--line)}
+.pad{padding:0 18px}
+.backbtn{background:none;border:none;color:var(--accent);font-weight:700;font-size:15px;cursor:pointer;padding:4px 0}
+
+/* управление задачами */
+.mrow{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 15px;margin:9px 18px;cursor:pointer}
+.mrow .nm{flex:1;font-weight:500;font-size:15px}
+.mrow .meta{font-family:'JetBrains Mono';font-size:12px;color:var(--muted);text-align:right;line-height:1.4}
+.field{margin:10px 18px}.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:8px}
+.input{width:100%;height:52px;background:var(--card);border:1px solid var(--line);border-radius:13px;color:var(--text);padding:0 15px;font-size:16px;font-family:'DM Sans'}
+.input:focus{outline:none;border-color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:9px 13px;border-radius:11px;background:var(--card);border:1px solid var(--line);font-size:14px;cursor:pointer;font-family:'JetBrains Mono'}
+.chip.sel{background:var(--accent);color:#1a1206;border-color:transparent;font-weight:700}
+.wd{display:flex;gap:6px}.wd .d{flex:1;height:42px;border-radius:11px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;font-family:'JetBrains Mono';cursor:pointer}
+.wd .d.sel{background:var(--accent);color:#1a1206;border-color:transparent;font-weight:700}
+
+.toast{position:absolute;left:50%;transform:translateX(-50%);bottom:30px;background:var(--card2);border:1px solid var(--line);padding:10px 16px;border-radius:13px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:60;max-width:330px;text-align:center}
+.toast.show{opacity:1}
