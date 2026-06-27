@@ -42,10 +42,10 @@ svg{width:100%;display:block;overflow:visible;touch-action:manipulation}
 .lrow:active{opacity:.6}
 .lrow .chev{transition:transform .2s;display:block}
 .litem.open .chev{transform:rotate(180deg)}
-.lrow .lname{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:15px;color:#aeb2ba}
-.lrow .lbar{height:6px;border-radius:5px;background:#2a2a33;overflow:hidden}
-.lrow .lbar i{display:block;height:100%;border-radius:5px;transition:width .5s cubic-bezier(.22,1,.36,1)}
-.lrow .lpc{font-family:'JetBrains Mono';font-weight:600;font-size:14px;text-align:right}
+.lrow .lname{font-family:'JetBrains Mono',ui-monospace,monospace;font-weight:400;font-size:13px;letter-spacing:normal;color:rgba(255,255,255,.5)}
+.lrow .lbar{height:6px;border-radius:9999px;background:rgba(255,255,255,.05);overflow:hidden}
+.lrow .lbar i{display:block;height:100%;border-radius:9999px;transition:width .5s cubic-bezier(.22,1,.36,1)}
+.lrow .lpc{font-family:'JetBrains Mono',ui-monospace,monospace;font-weight:400;font-size:13px;text-align:right}
 .lexp{border-top:1px solid var(--line);padding:2px 6px 6px}
 .lexp .empty{color:var(--muted);font-size:14px;padding:16px;text-align:center;line-height:1.5}
 .lexp .foot{display:flex;justify-content:flex-end;padding:2px 10px 6px}
