@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#050507;color:#F5F5F7;font-family:'DM Sans',sans-serif;padding:24px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;max-width:760px;margin:0 auto}
+.cell{background:#0d0d12;border:1px solid #23232d;border-radius:18px;padding:14px 12px 6px}
+.cap{display:flex;align-items:flex-start;gap:10px;padding:0 6px 4px}
+.num{font-family:'JetBrains Mono';font-weight:800;font-size:22px;color:#FF9F0A;line-height:1}
+.desc{font-size:12.5px;color:#aeb2ba;line-height:1.35}
+svg{width:100%;display:block;overflow:visible}
+h1{text-align:center;font-family:'JetBrains Mono';font-weight:800;font-size:18px;margin-bottom:18px;color:#FF9F0A;letter-spacing:.04em}
+</style></head>
+<body>
+<h1>МАЯК · размещение текста в секторах — 8 вариантов</h1>
+<div class="grid" id="grid"></div>
+<script>
+const C={x:150,y:150}, Ro=128, Ri=66, GAP=2;
+const P=(a,r)=>({x:C.x+r*Math.sin(a*Math.PI/180), y:C.y-r*Math.cos(a*Math.PI/180)});
+const f=p=>p.map(q=>q.x.toFixed(1)+','+q.y.toFixed(1)).join(' ');
+function annular(a1,a2,rIn,rOut){const o1=P(a1,rOut),o2=P(a2,rOut),i2=P(a2,rIn),i1=P(a1,rIn);
+  return `M${o1.x.toFixed(1)} ${o1.y.toFixed(1)} A${rOut} ${rOut} 0 0 1 ${o2.x.toFixed(1)} ${o2.y.toFixed(1)} L${i2.x.toFixed(1)} ${i2.y.toFixed(1)} A${rIn} ${rIn} 0 0 0 ${i1.x.toFixed(1)} ${i1.y.toFixed(1)} Z`;}
+const DIRS=[
+ {n:'Дух',ab:'Дух',a:0,c:'#64D2FF',p:76},
+ {n:'Коммуникации',ab:'Комм.',a:60,c:'#FF9F0A',p:43},
+ {n:'Тело',ab:'Тело',a:120,c:'#30D158',p:65},
+ {n:'Дело',ab:'Дело',a:180,c:'#FFD54A',p:85},
+ {n:'Разум',ab:'Разум',a:240,c:'#BF5AF2',p:76},
+ {n:'Энергия',ab:'Энерг.',a:300,c:'#FF453A',p:73},
+];
+const anchor=a=>{const s=Math.sin(a*Math.PI/180);return Math.abs(s)<0.34?'middle':(s>0?'start':'end');};
+
+function base(){ // сектора + заливка + центр (неизменно)
+  let s='';
+  DIRS.forEach(d=>{const a1=d.a-30+GAP,a2=d.a+30-GAP,rF=Ri+(d.p/100)*(Ro-Ri);
+    s+=`<path d="${annular(a1,a2,Ri,Ro)}" fill="${d.c}" fill-opacity=".16"/>`;
+    s+=`<path d="${annular(a1,a2,Ri,rF)}" fill="${d.c}" fill-opacity=".9"/>`;});
+  s+=`<circle cx="${C.x}" cy="${C.y}" r="${Ri-3}" fill="#0d0d12" stroke="#23232d" stroke-width="1.5"/>`;
+  s+=`<text x="${C.x}" y="${C.y+5}" text-anchor="middle" fill="#5a5f6a" font-family="JetBrains Mono" font-weight="800" font-size="15">44%</text>`;
+  return s;
+}
+function txt(mode){
+  let s='';
+  DIRS.forEach((d,i)=>{
+    const rMid=(Ri+Ro)/2, m=P(d.a,rMid), an=anchor(d.a);
+    const NM='#fff', PC=d.c;
+    if(mode===1){ // внутри, мелкий шрифт под ширину, 1 строка + %
+      s+=`<text x="${m.x}" y="${m.y-2}" text-anchor="middle" fill="${NM}" font-family="DM Sans" font-weight="700" font-size="9.5">${d.n}</text>`+
+         `<text x="${m.x}" y="${m.y+11}" text-anchor="middle" fill="${NM}" font-family="JetBrains Mono" font-weight="700" font-size="10" opacity=".85">${d.p}%</text>`;
+    }else if(mode===2){ // название СНАРУЖИ горизонтально + % внутри
+      const o=P(d.a,Ro+14);
+      s+=`<text x="${o.x}" y="${o.y+(d.a===0?-3:d.a===180?12:4)}" text-anchor="${an}" fill="${d.c}" font-family="JetBrains Mono" font-weight="500" font-size="11">${d.n}</text>`+
+         `<text x="${m.x}" y="${m.y+4}" text-anchor="middle" fill="#fff" font-family="JetBrains Mono" font-weight="700" font-size="13">${d.p}%</text>`;
+    }else if(mode===3){ // название ПО ДУГЕ снаружи + % внутри
+      const lower=d.a>90&&d.a<270, R=Ro+9;
+      const p1=P(lower?d.a+26:d.a-26,R), p2=P(lower?d.a-26:d.a+26,R);
+      const id='arc'+mode+'_'+i+'_'+Math.round(d.a);
+      s+=`<defs><path id="${id}" d="M${p1.x.toFixed(1)} ${p1.y.toFixed(1)} A${R} ${R} 0 0 ${lower?0:1} ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}"/></defs>`+
+         `<text fill="${d.c}" font-family="JetBrains Mono" font-weight="600" font-size="10.5"><textPath href="#${id}" startOffset="50%" text-anchor="middle">${d.n}</textPath></text>`+
+         `<text x="${m.x}" y="${m.y+4}" text-anchor="middle" fill="#fff" font-family="JetBrains Mono" font-weight="700" font-size="13">${d.p}%</text>`;
+    }else if(mode===4){ // только % внутри крупно (названий на колесе нет)
+      s+=`<text x="${m.x}" y="${m.y+6}" text-anchor="middle" fill="#fff" font-family="JetBrains Mono" font-weight="800" font-size="17">${d.p}%</text>`;
+    }else if(mode===5){ // аббревиатуры внутри + %
+      s+=`<text x="${m.x}" y="${m.y-2}" text-anchor="middle" fill="${NM}" font-family="DM Sans" font-weight="700" font-size="12">${d.ab}</text>`+
+         `<text x="${m.x}" y="${m.y+13}" text-anchor="middle" fill="${NM}" font-family="JetBrains Mono" font-weight="700" font-size="11" opacity=".85">${d.p}%</text>`;
+    }else if(mode===6){ // название повёрнуто по радиусу + %
+      let rot=d.a; if(d.a>90&&d.a<270) rot=d.a+180;
+      const t=P(d.a,rMid+2);
+      s+=`<text x="${t.x}" y="${t.y}" text-anchor="middle" fill="${NM}" font-family="DM Sans" font-weight="700" font-size="12" transform="rotate(${rot} ${t.x} ${t.y})">${d.n}</text>`+
+         `<text x="${P(d.a,Ri+13).x}" y="${P(d.a,Ri+13).y+3}" text-anchor="middle" fill="${NM}" font-family="JetBrains Mono" font-weight="700" font-size="9" opacity=".8">${d.p}%</text>`;
+    }else if(mode===7){ // СНАРУЖИ пилюля с названием + % внутри
+      const o=P(d.a,Ro+16), w=d.n.length*6.4+12;
+      s+=`<rect x="${o.x-w/2}" y="${o.y-9}" width="${w}" height="18" rx="9" fill="#0d0d12" stroke="${d.c}" stroke-width="1.2"/>`+
+         `<text x="${o.x}" y="${o.y+4}" text-anchor="middle" fill="${d.c}" font-family="DM Sans" font-weight="700" font-size="10">${d.n}</text>`+
+         `<text x="${m.x}" y="${m.y+4}" text-anchor="middle" fill="#fff" font-family="JetBrains Mono" font-weight="700" font-size="13">${d.p}%</text>`;
+    }else if(mode===8){ // двухуровнево ВНУТРИ: название у внешнего края, % у внутреннего
+      const no=P(d.a,Ro-15), pi=P(d.a,Ri+13);
+      s+=`<text x="${no.x}" y="${no.y+3}" text-anchor="middle" fill="${NM}" font-family="DM Sans" font-weight="700" font-size="10">${d.ab}</text>`+
+         `<text x="${pi.x}" y="${pi.y+3}" text-anchor="middle" fill="${NM}" font-family="JetBrains Mono" font-weight="700" font-size="11" opacity=".9">${d.p}%</text>`;
+    }
+  });
+  return s;
+}
+const TITLES=[
+ ['1','Внутри: мелкий шрифт под ширину сектора (название + % в 1 колонку)'],
+ ['2','Название СНАРУЖИ горизонтально, % внутри сектора'],
+ ['3','Название ПО ДУГЕ снаружи, % внутри'],
+ ['4','Только % внутри крупно (названия — в списке снизу)'],
+ ['5','Аббревиатуры внутри (Комм., Энерг.) + %'],
+ ['6','Название повёрнуто по радиусу (вдоль луча) + %'],
+ ['7','Снаружи «пилюля» с названием, % внутри'],
+ ['8','Двухуровнево внутри: имя у обода, % у центра'],
+];
+document.getElementById('grid').innerHTML=TITLES.map((t,k)=>{
+  const mode=k+1;
+  return `<div class="cell"><div class="cap"><span class="num">${t[0]}</span><span class="desc">${t[1]}</span></div>
+    <svg viewBox="-18 -14 336 320">${base()}${txt(mode)}</svg></div>`;
+}).join('');
+</script>
+</body></html>
