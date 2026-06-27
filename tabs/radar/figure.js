@@ -18,11 +18,13 @@ function drawWheel(){
     seg+=`<path class="hit" data-id="${d.id}" d="${sectorPath(d.a,Ri,Ro)}" fill="${d.col}" fill-opacity="${dim?.10:.16}" stroke="${sel===d.id?'#F5F5F7':d.col}" stroke-opacity="${sel===d.id?.9:.35}" stroke-width="${sel===d.id?2:1}" style="cursor:pointer;transition:fill-opacity .2s,stroke-opacity .2s"/>`;
     // заливка по квартальному %
     if(k>0.01) seg+=`<path d="${sectorPath(d.a,Ri,rFill)}" fill="${d.col}" fill-opacity="${dim?.32:.9}" pointer-events="none" style="transition:fill-opacity .2s"/>`;
-    // название ПО ДУГЕ снаружи (для нижней половины — дуга разворачивается, чтобы текст не был вверх ногами)
-    const lower=d.a>90&&d.a<270, R=Ro+9;
+    // название ПО ДУГЕ снаружи (нижняя половина — дуга разворачивается, чтобы текст не был вверх ногами)
+    // верхние: буквы растут наружу от дуги; нижние: внутрь — поэтому радиус дуги поднимаем на высоту буквы, чтобы зазор до сектора был ОДИНАКОВЫМ
+    const lower=d.a>90&&d.a<270;
+    const NAME_GAP=6, CAP=11, R=Ro+NAME_GAP+(lower?CAP:0);
     const p1=P(lower?d.a+25:d.a-25,R), p2=P(lower?d.a-25:d.a+25,R), id='arc_'+d.id;
     defs+=`<path id="${id}" d="M${p1.x.toFixed(1)} ${p1.y.toFixed(1)} A${R} ${R} 0 0 ${lower?0:1} ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}"/>`;
-    seg+=`<text pointer-events="none" fill="${d.col}" fill-opacity="${dim?.5:1}" font-family="JetBrains Mono" font-weight="600" font-size="12"><textPath href="#${id}" startOffset="50%" text-anchor="middle">${d.name}</textPath></text>`;
+    seg+=`<text pointer-events="none" fill="${d.col}" fill-opacity="${dim?.5:1}" font-family="JetBrains Mono" font-weight="600" font-size="14"><textPath href="#${id}" startOffset="50%" text-anchor="middle">${d.name}</textPath></text>`;
     // % внутри сектора
     const m=P(d.a,(Ri+Ro)/2);
     seg+=`<text pointer-events="none" x="${m.x.toFixed(1)}" y="${(m.y+5.5).toFixed(1)}" text-anchor="middle" fill="#F5F5F7" fill-opacity="${dim?.5:1}" font-family="JetBrains Mono" font-weight="700" font-size="16">${pc(dirQ(d.id))}%</text>`;
